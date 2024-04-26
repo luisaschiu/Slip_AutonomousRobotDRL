@@ -347,7 +347,7 @@ class DQN:
     def train_agent_static(self, maze: Maze, num_episodes = 200, load_weights_path = None, heuristics_flag = False):
         loss = 0
         total_step = 0
-        deleteGifs()
+        deleteGifs("training")
         if load_weights_path:
             print("Loading Weights to continue training...")
             self.model.load_weights(load_weights_path)
@@ -429,7 +429,7 @@ class DQN:
     def train_agent_dynamic(self, maze_lst, num_episodes = 200, load_weights_path = None, heuristics_flag = False):
         loss = 0
         total_step = 0
-        deleteGifs()
+        deleteGifs("training")
         if load_weights_path:
             print("Loading Weights to continue training...")
             self.model.load_weights(load_weights_path)
@@ -517,7 +517,7 @@ class DQN:
         if load_weight_dir is not None:
             self.model.load_weights(load_weight_dir)
         total_step = 0
-        deleteGifs()
+        deleteGifs("gameplay")
         for episode in range(num_episodes):
             status = None
             self.cur_stacked_images.clear()
@@ -575,7 +575,7 @@ class DQN:
         if load_weight_dir is not None:
             self.model.load_weights(load_weight_dir)
         total_step = 0
-        deleteGifs()
+        deleteGifs("gameplay")
         for episode in range(num_episodes):
             status = None
             self.cur_stacked_images.clear()
