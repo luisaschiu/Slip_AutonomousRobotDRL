@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from collections import deque
+from collections import deque, OrderedDict
 import random
 from class_maze import Maze, deleteGifs
 from tensorflow.keras import initializers, models, optimizers, metrics, losses
@@ -25,13 +25,13 @@ class DQN:
         self.replay_memory_capacity=10000000
         self.replay_memory = deque(maxlen=self.replay_memory_capacity)
         # self.replay_start_size = maze_size**3*8*8 # nrows^3
-        self.replay_start_size = maze_size**3
+        self.replay_start_size = maze_size**3*2
         self.discount_factor = 0.99 # Also known as gamma
         self.init_exploration_rate = 1.0 # Exploration rate, also known as epsilon
         self.final_exploration_rate = 0.1
         # self.final_exploration_frame = 12  # This performed better than the past
         # self.final_exploration_frame = maze_size*250*8*2 # Josh uses: (nrows^3*5)
-        self.final_exploration_frame = maze_size*250
+        self.final_exploration_frame = maze_size*250*2
         self.learning_rate = 0.001
         self.minibatch_size = 32
         self.max_steps_per_episode = maze_size*5 # nrows^2
@@ -52,6 +52,7 @@ class DQN:
         self.loss_lst = []
         self.total_step_loss_lst = []
         self.expl_rate_lst = []
+        
 
     def build_model(self):
         # NOTE: Random weights are initialized, might want to include an option to load weights from a file to continue training
@@ -351,6 +352,16 @@ class DQN:
         if load_weights_path:
             print("Loading Weights to continue training...")
             self.model.load_weights(load_weights_path)
+
+        # Save parameters to a .csv file for testing and tuning purposes
+        parameters_dictionary = OrderedDict()
+        parameters_dictionary.update({'Replay Start Size': self.replay_start_size, 'Discount Factor': self.discount_factor, 'Final Expl Frame': self.final_exploration_frame, 'Learning Rate': self.learning_rate, 'Minibatch Size': self.minibatch_size, 'Max Steps per Ep': self.max_steps_per_episode, 'Update Target Network Freq': self.update_target_network_freq})
+        with open('network_parameters.csv', mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Write headers and values to the CSV file
+            for key, value in parameters_dictionary.items():
+                writer.writerow([key, value])
+        
         for episode in range(num_episodes):
             self.cur_stacked_images.clear()
             episode_step = 0
@@ -433,6 +444,16 @@ class DQN:
         if load_weights_path:
             print("Loading Weights to continue training...")
             self.model.load_weights(load_weights_path)
+
+        # Save parameters to a .csv file for testing and tuning purposes
+        parameters_dictionary = OrderedDict()
+        parameters_dictionary.update({'Replay Start Size': self.replay_start_size, 'Discount Factor': self.discount_factor, 'Final Expl Frame': self.final_exploration_frame, 'Learning Rate': self.learning_rate, 'Minibatch Size': self.minibatch_size, 'Max Steps per Ep': self.max_steps_per_episode, 'Update Target Network Freq': self.update_target_network_freq})
+        with open('network_parameters.csv', mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Write headers and values to the CSV file
+            for key, value in parameters_dictionary.items():
+                writer.writerow([key, value])
+        
         for episode in range(num_episodes):
             self.cur_stacked_images.clear()
             episode_step = 0
@@ -630,3 +651,6 @@ def save_pickle_to_csv(save_csv_file_path: str, pickle_file_path:str):
         writer = csv.writer(csvfile)
         writer.writerow(['x-values', 'y-values'])
         writer.writerows(lst)
+
+def save_parameters_file(data_dictionary: dict):
+    pass

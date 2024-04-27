@@ -59,7 +59,7 @@ def TestCase1():
     new_network.play_game_static(maze1, 100, "model_weights.h5")
 
 
-# Static maze, has heuristics
+# Static maze, has heuristics, with slip
 def TestCase2():
     # Using a 4x4 maze:
     # Testing dynamic mazes:
@@ -82,7 +82,7 @@ def TestCase2():
     # maze_size = 8
 
     marker_filepath = "images/marker8.jpg"
-    maze1 = Maze(maze_array1, marker_filepath, (0,0), (3,3), 180)
+    maze1 = Maze(maze_array1, marker_filepath, (0,0), (3,3), 180, slip_flag=True)
     network = DQN((120, 120), maze_size)
     network.train_agent_static(maze1, 200, heuristics_flag=True)
     new_network = DQN((120, 120), maze_size)

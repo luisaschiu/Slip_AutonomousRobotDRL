@@ -6,10 +6,11 @@ from matplotlib.transforms import Bbox
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import os
 import glob
+import random
 from PIL import Image
 
 class Maze:
-    def __init__(self, maze:np.array, marker_filepath:str, start_pt: tuple, goal_pt: tuple, start_orientation:int):
+    def __init__(self, maze:np.array, marker_filepath:str, start_pt: tuple, goal_pt: tuple, start_orientation:int, slip_flag = False):
         self.init_maze = np.copy(maze)
         self.maze = maze
         self.robot_location = start_pt
@@ -34,6 +35,7 @@ class Maze:
         self.traversed = []
         # self.min_reward = -0.5*maze.size
         self.total_reward = 0
+        self.slip_flag = slip_flag
 
     def show(self):
         # print(self.robot_location)
@@ -129,6 +131,16 @@ class Maze:
     def move_robot(self, direction:str):
         robot_x, robot_y = self.robot_location[0], self.robot_location[1]
         # TODO: Consider if I still need to append to a traversed location in line above, if robot does not move from invalid move.
+        if self.slip_flag:
+            choices = ['slip', 'no slip']
+            probabilities = [0.2, 0.8]  # Adjust these probabilities as needed
+            # Generate a random choice based on the defined probabilities
+            random_choice = random.choices(choices, weights=probabilities, k=1)[0]
+            # print('random choice: ', random_choice)
+            if random_choice == 'slip':
+                # print('slip')
+                return 'slip'
+        # print('no slip')
         if direction == "UP":
             test_location = (robot_x, robot_y-1)
             expected_angle = 0
@@ -146,6 +158,7 @@ class Maze:
                     self.robot_orientation = expected_angle//90
                 self.traversed.append((robot_x, robot_y))
                 self.robot_location = (robot_x, robot_y-1)
+                return 'no slip'
         elif direction == "DOWN":
             test_location = (robot_x, robot_y+1)
             expected_angle = 180
@@ -163,6 +176,7 @@ class Maze:
                     self.robot_orientation = expected_angle//90
                 self.traversed.append((robot_x, robot_y))
                 self.robot_location = (robot_x, robot_y+1)
+                return 'no slip'
         elif direction == "LEFT":
             test_location = (robot_x-1, robot_y)
             expected_angle = 90
@@ -180,6 +194,7 @@ class Maze:
                     self.robot_orientation = expected_angle//90
                 self.traversed.append((robot_x, robot_y))
                 self.robot_location = (robot_x-1, robot_y)
+                return 'no slip'
         elif direction == "RIGHT":
             test_location = (robot_x+1, robot_y)
             expected_angle = 270
@@ -197,6 +212,7 @@ class Maze:
                     self.robot_orientation = expected_angle//90
                 self.traversed.append((robot_x, robot_y))
                 self.robot_location = (robot_x+1, robot_y)
+                return 'no slip'
 
 
     def get_available_actions(self):
@@ -280,13 +296,13 @@ class Maze:
             return 10
         # Robot has already visited this spot
         if (robot_x, robot_y) in self.traversed:
-            return -0.6
+            return -0.7
             # return -0.25
         else:
             # Advanced onto a new spot in the maze, but hasn't reached the goal or gone backwards
             heuristic = self.manhattan_distance(robot_x, robot_y, self.goal_pt[0], self.goal_pt[1])
             norm_heuristic = heuristic/self.manhattan_distance(self.start_pt[0], self.start_pt[1], self.goal_pt[0], self.goal_pt[1])
-            return -0.3*norm_heuristic
+            return -0.4*norm_heuristic
     
     def game_over(self):
         robot_x, robot_y = self.robot_location[0], self.robot_location[1]
@@ -305,8 +321,13 @@ class Maze:
         # return 'not over'
 
     def take_action(self, action: str, time_step):
-        self.move_robot(action)
-        reward = self.get_reward()
+        slip_condition = self.move_robot(action)
+        if slip_condition == 'slip':
+            reward = 0
+            # print('reward: ', reward)
+        else:
+            reward = self.get_reward()
+            # print('reward: ', reward)
         self.total_reward += reward
         game_over = self.game_over()
         # self.time_step += 1
@@ -314,8 +335,13 @@ class Maze:
         return (new_state_img, reward, game_over)
     
     def take_action_heuristics(self, action: str, time_step):
-        self.move_robot(action)
-        reward = self.get_reward_heuristics()
+        slip_condition = self.move_robot(action)
+        if slip_condition == 'slip':
+            reward = 0
+            # print('reward: ', reward)
+        else:
+            reward = self.get_reward_heuristics()
+            # print('reward: ', reward)
         self.total_reward += reward
         game_over = self.game_over()
         # self.time_step += 1

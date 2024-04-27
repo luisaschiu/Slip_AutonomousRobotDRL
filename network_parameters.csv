@@ -1,0 +1,7 @@
+Replay Start Size,128
+Discount Factor,0.99
+Final Expl Frame,2000
+Learning Rate,0.001
+Minibatch Size,32
+Max Steps per Ep,20
+Update Target Network Freq,24
